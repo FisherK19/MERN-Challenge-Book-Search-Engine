@@ -17,6 +17,7 @@
     "concurrently": "^5.1.0"
   },
   "dependencies": {
+    "@apollo/client": "^3.9.11",
     "apollo-server": "^3.13.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
