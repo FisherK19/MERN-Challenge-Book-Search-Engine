@@ -22,7 +22,7 @@ async function startApolloServer() {
 
     // Serve static assets from the React build directory in production mode
     if (process.env.NODE_ENV === "production") {
-        app.use(express.static(path.join(__dirname, '../client/build')));
+        app.use(express.static(path.join(__dirname, '../client/dist')));
     }
 
     // This middleware starts the Apollo Server on the Express application
@@ -31,7 +31,7 @@ async function startApolloServer() {
 
     // Catch-all handler to serve the index.html file for non-API requests in production
     app.get('*', (req, res) => {
-        const indexPath = path.join(__dirname, '../client/build/index.html');
+        const indexPath = path.join(__dirname, '../client/dist/index.html');
         console.log(`Serving index.html from: ${indexPath}`); // Logging the path for debugging
         res.sendFile(indexPath);
     });
