@@ -1,13 +1,11 @@
-// see SignupForm.js for comments
 import { useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
-
 import { loginUser } from '../utils/API';
 import Auth from '../utils/auth';
 
 const LoginForm = () => {
   const [userFormData, setUserFormData] = useState({ email: '', password: '' });
-  const [validated] = useState(false);
+  const [validated, setValidated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
 
   const handleInputChange = (event) => {
@@ -17,40 +15,30 @@ const LoginForm = () => {
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();
+    const form = event.currentTarget;
+    
+    // Check if form is valid using HTML5 form validation
+    if (form.checkValidity() === false) {
+      event.stopPropagation();
+      setValidated(true); // Set validated to true to trigger bootstrap validation styles
+      setShowAlert(true); // Display the alert when form is invalid
+      return;
+    }
 
-    // check if form has everything (as per react-bootstrap docs)
-    const handleFormSubmit = async (event) => {
-      event.preventDefault();
-      const form = event.currentTarget;
+    // Try to log in the user with the formData
+    try {
+      const response = await loginUser(userFormData);
+      if (!response.ok) throw new Error('Failed to log in!');
     
-      // Update the form validation state
-      const isValid = form.checkValidity();
-      if (!isValid) {
-        event.stopPropagation();
-        setShowAlert(true); // Display the alert when form is invalid
-        return;
-      }
-    
-      try {
-        const response = await loginUser(userFormData);
-        if (!response.ok) throw new Error('Failed to log in!');
-    
-        const { token, user } = await response.json();
-        Auth.login(token);  
-        setUserFormData({ email: '', password: '' });  
-        setShowAlert(false); 
-      } catch (err) {
-        console.error(err);
-        setShowAlert(true);
-      }
-    };
-    
-
-    setUserFormData({
-      username: '',
-      email: '',
-      password: '',
-    });
+      const { token } = await response.json();
+      Auth.login(token); // Assuming Auth.login() manages your session setting
+      setUserFormData({ email: '', password: '' }); // Clear form data
+      setShowAlert(false); // Hide alert on successful login
+      setValidated(false); // Reset validation state
+    } catch (err) {
+      console.error(err);
+      setShowAlert(true);
+    }
   };
 
   return (
@@ -59,11 +47,12 @@ const LoginForm = () => {
         <Alert dismissible onClose={() => setShowAlert(false)} show={showAlert} variant='danger'>
           Something went wrong with your login credentials!
         </Alert>
+
         <Form.Group className='mb-3'>
           <Form.Label htmlFor='email'>Email</Form.Label>
           <Form.Control
-            type='text'
-            placeholder='Your email'
+            type='email' 
+            placeholder='Enter your email'
             name='email'
             onChange={handleInputChange}
             value={userFormData.email}
@@ -76,7 +65,7 @@ const LoginForm = () => {
           <Form.Label htmlFor='password'>Password</Form.Label>
           <Form.Control
             type='password'
-            placeholder='Your password'
+            placeholder='Enter your password'
             name='password'
             onChange={handleInputChange}
             value={userFormData.password}
@@ -84,11 +73,12 @@ const LoginForm = () => {
           />
           <Form.Control.Feedback type='invalid'>Password is required!</Form.Control.Feedback>
         </Form.Group>
+
         <Button
           disabled={!(userFormData.email && userFormData.password)}
           type='submit'
           variant='success'>
-          Submit
+          Login
         </Button>
       </Form>
     </>
